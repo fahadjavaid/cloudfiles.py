@@ -1,7 +1,6 @@
-
 import pyrax
 pyrax.set_default_region("LON")
-pyrax.set_credentials("davecottrell1", "799723e291376136b2b5a9cb7e0779ad")
+pyrax.set_credentials("username", "your_apikey")
 
 """ List of servers in the account """
 
