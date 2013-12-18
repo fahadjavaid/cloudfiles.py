@@ -1,7 +1,7 @@
 import pyrax
 pyrax.set_default_region("LON")
 pyrax.set_setting("identity_type", "rackspace")
-pyrax.set_credentials("davecottrell1", "799723e291376136b2b5a9cb7e0779ad")
+pyrax.set_credentials("username", "api_key")
 
 
 
