@@ -1,4 +1,3 @@
-
 <#
 
 Before running this script on Customers server please first try to run below command to
@@ -23,7 +22,7 @@ to restricted.
 PS C:\> Get-ExecutionPolicy
 restricted
 
-PS C:\> set-ExecutionPolicy unrestricted
+PS C:\> set-ExecutionPolicy remotesigned
 ************************
 
 After running the script change the Exexcution Policy to restricted again.
