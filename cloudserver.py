@@ -1,6 +1,6 @@
 import pyrax
 pyrax.set_default_region("LON")
-pyrax.set_credentials("username", "your_apikey")
+pyrax.set_credentials("davecottrell1", "799723e291376136b2b5a9cb7e0779ad")
 
 """ List of servers in the account """
 
@@ -10,7 +10,7 @@ server_name = raw_input("Add server name: ")
 
 cs = pyrax.cloudservers
 servers = cs.servers.list()
-print servers
+print servercore
 print
 print
 
@@ -92,4 +92,3 @@ else:
 
 
                       
-
