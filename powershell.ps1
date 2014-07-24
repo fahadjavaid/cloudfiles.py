@@ -16,7 +16,7 @@ Unrestricted
 ********************
 
 If the result is as it shows below restricted then you need to change
-the policy to unrestriected, run the script and then change the policy back 
+the policy to remotesigned, run the script and then change the policy back 
 to restricted.
 
 PS C:\> Get-ExecutionPolicy
@@ -34,30 +34,48 @@ PS C:\> set-ExecutionPolicy restricted
 
 
 
-#>
+$computer = $env:computername
+$lastboot = (Get-WmiObject -Class Win32_OperatingSystem).LastBootUpTime
+$lastboottime = [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboot)
+$boot = (get-date) - [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboot)
 
-$VerbosePreference = "Continue"
-Write-Verbose "Running Step1 out of 3 and Looking for user initiated restarts"
+""
+Write-Host "Checking for Server Uptime Details: "
+""
+write-host "Servername" $computer;write-host "Current Date & Time = " (get-date);Write-Host "Last Boot Date & Time = " $lastboottime
+Write-Host "Server has been up for: " $boot.days "days" $boot.hours "hours" $boot.minutes  "minutes";
 
 
+Write-Host -fore Yellow "Running Step 1 out of 3 and Looking for user initiated restarts"
 
 $Userrestart=get-eventlog -logname system |where-object {$_.eventid -eq 1074} |select-object Timewritten, UserName -first 3 | ft -autosize
 
-Write-host " "
-Write-host -Fore Green "Last three User restarts"
 if (!$Userrestart) {write-host -fore Red "No matching system log events found for user initiated restart..."}
-else {$userrestart}
+else {Write-host -Fore Green "Last three User restarts"; $userrestart}
 
-Write-Verbose "Running Step2 out of 3 and looking for Exexpected shutdowns"
+Write-Host -fore Yellow "Running Step 2 out of 3 and looking for Unexpected Shutdowns"
 
-$unexpectedshutdown=get-eventlog -logname system |where-object {$_.eventid -eq 6008} |select-object Timewritten -first 3 | ft -autosize
+$unexpectedshutdown=get-eventlog -logname system |where-object {$_.eventid -eq "6008" -or $_.eventid -eq "41" } |select-object message, Timewritten -first 3 | ft -autosize
+$crash = get-eventlog -logname system |where-object {$_.eventid -eq 41} |select-object Message -first 3| format-list
 
-Write-host " "
-Write-host -Fore Green "Last three unexpected Shutdowns"
+
 if (!$unexpectedshutdown) {write-host -fore Red "No matching system log events found for unexpected shutdown...."}
-else {$unexpectedshutdown}
+else {Write-host -Fore Green "Last three unexpected Shutdowns"; $unexpectedshutdown}
 
-Write-Verbose "Running Step3 out of 3 and looking for installed updates"
-Write-host " "
-Write-host -Fore Green "Details of last three installed updates"
-get-hotfix | select InstalledOn, Description, HotFixID -last 3
+
+[void] [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.Web.Administration")
+$iis = New-Object Microsoft.Web.Administration.ServerManager
+$iis =Import-Module webadministration
+
+Write-Host -fore Yellow "List and Number of websites under IIS"
+get-childitem iis:\sites
+(get-childitem iis:\sites).count
+
+Write-Host -fore Yellow "List and Number of Stopped Websites"
+get-childitem iis:\sites |where-object {$_.state -eq "stopped"}
+(get-childitem iis:\sites |where-object {$_.state -eq "stopped"}).count
+
+
+Write-host -fore Yellow "List and Number of Application Pools under IIS Manager"
+get-childitem iis:\apppools
+(get-childitem iis:\apppools |where-object {$_.state -eq "stopped"}).count
